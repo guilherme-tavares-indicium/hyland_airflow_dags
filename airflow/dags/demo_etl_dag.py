@@ -64,7 +64,7 @@ with DAG('pull_and_run_etl_dag', default_args=default_args, schedule_interval=No
         name='run-container-etl',
         namespace='prod-airflow',
         image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
-        image_pull_secrets=[k8s.V1LocalObjectReference('aws-registry')]
+        image_pull_secrets=[k8s.V1LocalObjectReference('aws-registry')],
         # image='hello-world',
         image_pull_policy='Always',
         is_delete_operator_pod=True,
@@ -75,4 +75,4 @@ with DAG('pull_and_run_etl_dag', default_args=default_args, schedule_interval=No
         }
     )
 
-    pull_image >> run_etl_container
+    # pull_image >> run_etl_container
