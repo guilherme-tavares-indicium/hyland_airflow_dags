@@ -3,6 +3,9 @@ from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.docker_operator import DockerOperator
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
+from kubernetes.client import models as k8s
+
+
 from airflow.models import Variable
 import boto3
 import subprocess
@@ -51,18 +54,19 @@ with DAG('pull_and_run_etl_dag', default_args=default_args, schedule_interval=No
     secretAccessKey_str = Variable.get("AWS_SECRET_ACCESS_KEY")
     secretAccessKey = json.loads(secretAccessKey_str)['AWS_SECRET_ACCESS_KEY']
     
-    pull_image = PythonOperator(
-        task_id='pull_ecr_image_task',
-        python_callable=pull_ecr_image
-    )
+    # pull_image = PythonOperator(
+    #     task_id='pull_ecr_image_task',
+    #     python_callable=pull_ecr_image
+    # )
     
     run_etl_container = KubernetesPodOperator(
         task_id='run_container_task_etl',
         name='run-container-etl',
         namespace='prod-airflow',
         image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
+        image_pull_secrets=[k8s.V1LocalObjectReference('aws-registry')]
         # image='hello-world',
-        image_pull_policy='IfNotPresent',
+        image_pull_policy='Always',
         is_delete_operator_pod=True,
         dag=dag,
         env_vars={
