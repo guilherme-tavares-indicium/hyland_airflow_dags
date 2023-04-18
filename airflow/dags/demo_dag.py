@@ -58,7 +58,7 @@ with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) 
     run_container = DockerOperator(
         task_id='run_container_task',
         # image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
-        image='hello-world'
+        image='hello-world',
         api_version='auto',
         auto_remove=True,
         dag=dag,
