@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.docker_operator import DockerOperator
+from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.models import Variable
 import boto3
 import subprocess
@@ -55,12 +56,14 @@ with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) 
         python_callable=pull_ecr_image
     )
     
-    run_container = DockerOperator(
+    run_container = KubernetesPodOperator(
         task_id='run_container_task',
+        name='run-container',
+        namespace='default',
         # image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
         image='hello-world',
-        api_version='auto',
-        auto_remove=True,
+        image_pull_policy='Always',
+        is_delete_operator_pod=True,
         dag=dag,
         environment={
             'AWS_ACCESS_KEY_ID': accessKeyId,
