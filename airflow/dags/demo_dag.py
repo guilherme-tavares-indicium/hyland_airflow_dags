@@ -65,7 +65,7 @@ with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) 
         image_pull_policy='Always',
         is_delete_operator_pod=True,
         dag=dag,
-        environment={
+        env_vars={
             'AWS_ACCESS_KEY_ID': accessKeyId,
             'AWS_SECRET_ACCESS_KEY': secretAccessKey,
         }
