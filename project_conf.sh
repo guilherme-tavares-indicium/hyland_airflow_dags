@@ -6,4 +6,4 @@ export PROFILE="hyland_base_infra"
 export INFRA_REPO_SLUG="${BITBUCKET_BRANCH}"
 export INFRA_REPO_WORKSPACE="${BITBUCKET_WORKSPACE}"
 export IMAGE_NAME="${ENV}-airflow-${PROFILE}"
-export AWS_BITBUCKET_PIPELINE_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/indiciumtech-hyland_base_infra
+export AWS_BITBUCKET_PIPELINE_ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/indiciumtech-hyland_base_infra"
