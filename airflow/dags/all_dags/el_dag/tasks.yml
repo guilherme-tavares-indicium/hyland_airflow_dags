@@ -1,0 +1,52 @@
+embulk_task:
+  for_each: embulk_tables
+  task_id: dump_{table_name}_to_s3
+  operator: plugins.embulk_operator.EmbulkEcsOperator
+  aws_conn_id: airflow_aws_conn
+  cluster: indicium-terraform-cluster
+  awslogs_group: indicium-ecs-logs/embulk
+  awslogs_region: us-east-1
+  awslogs_stream_prefix: embulk/embulk
+  launch_type: FARGATE
+  pool: default_pool
+  network_configuration:
+    awsvpcConfiguration:
+      subnets: [subnet-0ae585545632d6b88]
+      securityGroups: [sg-0da4b5e74672c9d49]
+  incremental_s3_config:
+    s3_bucket: s3://bucket_s3
+    s3_key: embulk-data/nome_banco/{table_name}
+  config:
+    in:
+      table: "{table_name}"
+      type: "sqlserver"
+      host: "{{ conn.example_db_connection.host }}"
+      port: "{{ conn.example_db_connection.port }}"
+      user: "{{ conn.example_db_connection.login }}"
+      password: "{{ conn.example_db_connection.password }}"
+      database: nome_banco
+    filters: [{"type": "rename", "rules": [{"rule": "upper_to_lower"}]}]
+    out:
+      type: s3
+      bucket: "{{ var.value.TARGET_BUCKET }}"
+      path_prefix:  "data/raw/nome_banco/{table_name}/{{ ds }}/"
+      file_ext: ".json.gz"
+      access_key_id: "{{ conn.airflow_aws_conn.login }}"
+      secret_access_key: "{{ conn.airflow_aws_conn.password }}"
+      formatter: {"type": "jsonl"}
+      encoders: [{"type": "gzip", "level": "1"}]
+copy_s3_to_redshift:
+  for_each: copy_tables
+  task_id: copy_{table_name}_s3_to_redshift
+  operator: airflow.operators.postgres_operator.PostgresOperator
+  dependencies: ["dump_{table_name}_to_s3"]
+  pool: default_pool
+  sql: "all_dags/el_dag/sqls/copy_replace_truncate.sql"
+  database: "{{ conn.redshift_prod_conn.dbname}}"
+  email_on_retry: false
+  postgres_conn_id: redshift_prod
+  params:
+    schema: "raw" 
+    table_name: "{table_name}"
+    s3_bucket_key: "/data/raw/nome_banco/{table_name}"
+    copy_options: json 'auto' gzip

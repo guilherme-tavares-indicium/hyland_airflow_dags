@@ -1,0 +1,5 @@
+dbt_tasks:
+  items_id: dbt_command
+  items:
+    test:
+    run:

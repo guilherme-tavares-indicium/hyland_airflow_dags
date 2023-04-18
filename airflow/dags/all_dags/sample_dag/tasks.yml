@@ -1,0 +1,17 @@
+delay:
+  task_id: delay
+  operator: airflow.operators.dummy_operator.DummyOperator
+
+embulk_task:
+  for_each: db_tables
+  task_id: dump_{table_name}_to_DL
+  dependencies: ["delay"]
+  operator: airflow.operators.bash.BashOperator
+  bash_command: echo "Extracting {table_name} from db to datalake"
+
+copy_s3_to_redshift:
+  for_each: copy_tables
+  task_id: copy_{table_name}_DL_to_DW
+  dependencies: ["dump_{table_name}_to_DL"]
+  operator: airflow.operators.bash.BashOperator
+  bash_command: echo "copying {table_name} from datalake to datawarehouse"

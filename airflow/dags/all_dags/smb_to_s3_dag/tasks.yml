@@ -1,0 +1,30 @@
+smb_to_local_xlsx:
+  for_each: smb_to_local_xlsx_list
+  task_id: smb_to_local_xlsx_{year}
+  operator: airflow.operators.python.PythonOperator
+  python_callable_file: /opt/airflow/dags/all_dags/smb_to_s3_dag/python_scripts/smb_connect.py
+  python_callable_name: download_to_tmp
+  provide_context: True
+  op_kwargs: {"year": "{year}"}
+local_xlsx_to_json_to_s3:
+  for_each: local_to_s3
+  task_id: local_xlsx_{report_name}_to_json_to_s3
+  provide_context: True
+  operator: airflow.operators.python.PythonOperator
+  python_callable_file: /opt/airflow/dags/all_dags/smb_to_s3_dag/python_scripts/send_s3.py
+  python_callable_name: send_to_s3
+  dependencies: ["smb_to_local_xlsx_2020", "smb_to_local_xlsx_2021","smb_to_local_xlsx_2022"]
+copy_s3_to_redshift:
+  for_each: copy_tables_list
+  task_id: copy_{report_name}_s3_to_redshift
+  operator: airflow.operators.postgres_operator.PostgresOperator
+  pool: default_pool
+  sql: "utils/sqls/copy_replace_truncate.sql"
+  database: redshift_prod
+  email_on_retry: false
+  postgres_conn_id: redshift_prod
+  params:
+    schema: "raw" 
+    table_name: "{report_name}"
+    s3_bucket_key: "/data/raw/nome_banco/{report_name}"
+  dependencies: ["local_xlsx_{report_name}_to_json_to_s3"]

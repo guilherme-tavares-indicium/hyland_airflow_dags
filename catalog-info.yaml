@@ -1,0 +1,19 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: "hyland_base_infra-airflow"
+  description: airflow
+  links:
+    - url: https://bitbucket.org/indiciumtech/hyland_airflow_dags/src/master
+      title: Airflow Repo
+      icon: airflow
+    - url: https://prod-airflow.hyland-indicium.indicium.tech
+      title: Airflow Url
+      icon: airflow
+spec:
+  type: service
+  owner: dev
+  system: orchestration
+  lifecycle: production
+  dependsOn: 
+    - component:default/hyland_base_infra

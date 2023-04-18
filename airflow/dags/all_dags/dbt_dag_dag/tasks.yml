@@ -1,0 +1,31 @@
+external_dag_sensor:
+  task_id: external_dag_sensor
+  pool: dbt_pool 
+  operator: airflow.sensors.external_task.ExternalTaskSensor
+  external_dag_id: external_dag
+  check_existence: True
+  retries: 0
+  timeout: 600
+run_anyway_dbt:
+  task_id: run_anyway_task
+  operator: airflow.operators.dummy.DummyOperator
+  trigger_rule: all_done
+  dependencies: ["external_dag_sensor"]
+# dbt_tasks:
+#   for_each: dbt_tasks
+#   pool: dbt_pool
+#   task_id: dbt_{dbt_command}
+#   operator: airflow.providers.amazon.aws.operators.ecs.ECSOperator
+#   operator: airflow.providers.amazon.aws.operators.ecs.ECSOperator
+#   aws_conn_id: airflow_aws_conn
+#   cluster: indicium-terraform-cluster
+#   task_definition: dbt_dw
+#   launch_type: FARGATE
+#   trigger_rule: all_done
+#   network_configuration:
+#     awsvpcConfiguration:
+#       subnets: [some-subnet]
+#       securityGroups: [some-sg]
+#   awslogs_group: indicium-ecs-logs/airflow-prod
+#   awslogs_stream_prefix: dbt/dbt_dw
+#   awslogs_region: us-east-1
