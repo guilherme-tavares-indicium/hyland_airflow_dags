@@ -56,8 +56,8 @@ with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) 
         python_callable=pull_ecr_image
     )
     
-    run_container = KubernetesPodOperator(
-        task_id='run_container_task',
+    run_etl_container = KubernetesPodOperator(
+        task_id='run_container_task_etl',
         name='run-container-etl',
         namespace='prod-airflow',
         image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
@@ -71,4 +71,4 @@ with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) 
         }
     )
 
-    pull_image >> run_container
+    pull_image >> run_etl_container
