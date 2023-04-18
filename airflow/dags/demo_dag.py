@@ -59,7 +59,7 @@ with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) 
     run_container = KubernetesPodOperator(
         task_id='run_container_task',
         name='run-container',
-        namespace='default',
+        namespace='prod-airflow',
         # image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
         image='hello-world',
         image_pull_policy='Always',
