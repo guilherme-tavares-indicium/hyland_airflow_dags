@@ -43,8 +43,8 @@ def pull_ecr_image():
 
 with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) as dag:
 
-    accessKeyId = Variable.get("AWS_ACCESS_KEY_ID")
-    secretAccessKey = Variable.get("AWS_SECRET_ACCESS_KEY")
+    accessKeyId = Variable.get("AWS_ACCESS_KEY_ID")['AWS_ACCESS_KEY_ID']
+    secretAccessKey = Variable.get("AWS_SECRET_ACCESS_KEY")['AWS_SECRET_ACCESS_KEY']
     
     pull_image = PythonOperator(
         task_id='pull_ecr_image_task',
