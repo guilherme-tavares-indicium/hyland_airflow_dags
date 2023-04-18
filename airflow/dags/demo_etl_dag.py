@@ -43,7 +43,7 @@ def pull_ecr_image():
     subprocess.run(['docker', 'pull', '196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest'])
 
 
-with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) as dag:
+with DAG('pull_and_run_etl_dag', default_args=default_args, schedule_interval=None) as dag:
 
     accessKeyId_str = Variable.get("AWS_ACCESS_KEY_ID")
     accessKeyId = json.loads(accessKeyId_str)['AWS_ACCESS_KEY_ID']
