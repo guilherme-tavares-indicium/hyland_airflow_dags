@@ -60,10 +60,10 @@ with DAG('pull_and_run_etl_dag', default_args=default_args, schedule_interval=No
         task_id='run_container_task_etl',
         name='run-container-etl',
         namespace='prod-airflow',
-        # image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
+        image='196029031078.dkr.ecr.us-east-1.amazonaws.com/hyland-poc-ecr:latest',
         image='hello-world',
         image_pull_policy='Always',
-        is_delete_operator_pod=True,
+        # is_delete_operator_pod=True,
         dag=dag,
         env_vars={
             'AWS_ACCESS_KEY_ID': accessKeyId,
