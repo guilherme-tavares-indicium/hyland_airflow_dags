@@ -15,7 +15,7 @@ pipelines:
             - /bin/sh $BITBUCKET_CLONE_DIR/scripts/generate-project-config.sh
             - source $BITBUCKET_CLONE_DIR/project_conf.sh
             - docker build . --platform linux/amd64 -t "${IMAGE_NAME}:${BITBUCKET_COMMIT}" -f $BITBUCKET_CLONE_DIR/Dockerfile
-            - BITBUCKET_OAUTH_TOKEN=$(curl -s  -X POST -u "${INFRA_PROJECT_CONSUMER_KEY}:${INFRA_PROJECT_CONSUMER_SECRET}" https://bitbucket.org/site/oauth2/access_toke -d grant_type=client_credentials | jq -r '.access_token')
+            - BITBUCKET_OAUTH_TOKEN=$(curl -s  -X POST -u "${INFRA_PROJECT_CONSUMER_KEY}:${INFRA_PROJECT_CONSUMER_SECRET}" https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials | jq -r '.access_token')
             # use the pipe to push the image to AWS ECR
             - pipe: atlassian/aws-ecr-push-image:2.0.0
               variables:
