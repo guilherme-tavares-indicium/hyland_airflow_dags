@@ -7,6 +7,7 @@ import boto3
 import subprocess
 import base64
 import os
+import json
 
 
 default_args = {
@@ -43,8 +44,11 @@ def pull_ecr_image():
 
 with DAG('pull_and_run_dag', default_args=default_args, schedule_interval=None) as dag:
 
-    accessKeyId = Variable.get("AWS_ACCESS_KEY_ID")['AWS_ACCESS_KEY_ID']
-    secretAccessKey = Variable.get("AWS_SECRET_ACCESS_KEY")['AWS_SECRET_ACCESS_KEY']
+    accessKeyId_str = Variable.get("AWS_ACCESS_KEY_ID")
+    accessKeyId = json.loads(accessKeyId_str)['AWS_ACCESS_KEY_ID']
+
+    secretAccessKey_str = Variable.get("AWS_SECRET_ACCESS_KEY")
+    secretAccessKey = json.loads(secretAccessKey_str)['AWS_SECRET_ACCESS_KEY']
     
     pull_image = PythonOperator(
         task_id='pull_ecr_image_task',
