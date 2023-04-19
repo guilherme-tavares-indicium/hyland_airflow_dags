@@ -1,8 +1,23 @@
 pipelines:
   custom:
-    deploy_to_ecr:
+    trigger_pipeline_remote_repo:
       - variables:
-          - name: BRANCH_NAME
+        - name: INFRA_REPO_NAME
+        - name: INFRA_REPO_BRANCH_NAME
+
+      - step:
+          image: atlassian/default-image:3
+          script:
+            - BITBUCKET_OAUTH_TOKEN=$(curl -s  -X POST -u "${INFRA_PROJECT_CONSUMER_KEY}:${INFRA_PROJECT_CONSUMER_SECRET}" https://bitbucket.org/site/oauth2/access_token -d grant_type=client_credentials | jq -r '.access_token')
+            - pipe: atlassian/trigger-pipeline:5.1.0
+              variables:
+                REPOSITORY: '$INFRA_REPO_NAME'
+                REF_TYPE: 'branch'
+                REF_NAME: "$INFRA_REPO_BRANCH_NAME"
+                BITBUCKET_ACCESS_TOKEN: $BITBUCKET_OAUTH_TOKEN
+                CUSTOM_PIPELINE_NAME: 'airflow-helm'
+                WAIT: 'true'
+    deploy_to_ecr:
       - step:
           oidc: true
           name: Upload Airflow Image to ECR
@@ -23,13 +38,8 @@ pipelines:
                 AWS_OIDC_ROLE_ARN: "${AWS_BITBUCKET_PIPELINE_ROLE_ARN}"
                 IMAGE_NAME: "${IMAGE_NAME}"
                 TAGS: "${TAG}"
-            - pipe: atlassian/trigger-pipeline:5.1.0
-              variables:
-                REPOSITORY: '$REPO_NAME'
-                REF_TYPE: 'branch'
-                REF_NAME: "$BRANCH_NAME"
-                BITBUCKET_ACCESS_TOKEN: $BITBUCKET_OAUTH_TOKEN
-                CUSTOM_PIPELINE_NAME: 'airflow-helm'
-                WAIT: 'true'
+
           services:
             - docker
+
+      
