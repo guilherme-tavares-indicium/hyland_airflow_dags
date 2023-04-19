@@ -15,7 +15,8 @@ pipelines:
                 REF_TYPE: 'branch'
                 REF_NAME: "$INFRA_REPO_BRANCH_NAME"
                 BITBUCKET_ACCESS_TOKEN: $BITBUCKET_OAUTH_TOKEN
-                CUSTOM_PIPELINE_NAME: 'airflow-helm'
+                CUSTOM_PIPELINE_NAME: 'airflow_helm'
+
                 WAIT: 'true'
     deploy_to_ecr:
       - step:
