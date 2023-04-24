@@ -6,10 +6,10 @@ def log_hello():
     print("hello from the dag")
 
 dag = DAG(
-    'simple_dag',
+    'hello_world_dag',
     description='A simple DAG that logs "hello from the dag"',
     schedule_interval='@once',
-    start_date=datetime(2023, 4, 19),
+    start_date=datetime(2023, 4, 24),
     catchup=False
 )
 
