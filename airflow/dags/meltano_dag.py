@@ -6,6 +6,8 @@ from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
+import logging
+
 
 
 # def create_new_kubernetes_operator_task(task_id, output, dag, task_no):
@@ -30,6 +32,9 @@ from airflow.operators.python_operator import PythonOperator
 def print_list_function(**kwargs):
     stream_list = kwargs['ti'].xcom_pull(key='return_value', task_ids='run_meltano_extraction')
     print(stream_list)
+    logging.info(stream_list)
+    logging.info('TEST')
+    print('TESTPRINT')
 
 # DAG
 default_args = {
