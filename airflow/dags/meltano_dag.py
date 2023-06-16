@@ -30,7 +30,7 @@ import logging
 #     )
 
 def print_list_function(**kwargs):
-    print('{{{{ task_instance.xcom_pull(task_ids="get_logs_task", key="return_value") }}}}')
+    print('{{ task_instance.xcom_pull(task_ids="get_logs_task", key="return_value") }}')
 
     # return stream_list
 
