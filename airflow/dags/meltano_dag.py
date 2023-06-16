@@ -40,7 +40,7 @@ def create_task_for_stream(dag, stream_name, stream_no):
 def task_builder(**kwargs):
     ti = kwargs['ti']
     xcon_output = ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction')
-    streams = xcon_output.get('return_value')
+    streams = xcon_output['return_value']
     print(streams)
 
     tasks = []
@@ -49,6 +49,7 @@ def task_builder(**kwargs):
         tasks.append(task)
 
     return tasks
+
 
 # DAG
 default_args = {
