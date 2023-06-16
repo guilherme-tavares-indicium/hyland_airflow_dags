@@ -14,6 +14,7 @@ def print_list_function(**kwargs):
     stream_names = ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction')
     print(stream_names)
 
+
 def create_task_for_stream(dag, stream_name, stream_no):
     # task_id = f"run_meltano_extraction_{stream_name.replace('-', '_')}"
     task = KubernetesPodOperator(
@@ -35,6 +36,19 @@ def create_task_for_stream(dag, stream_name, stream_no):
         do_xcom_push=False,
     )
     return task
+
+def task_builder(**kwargs):
+    ti = kwargs['ti']
+    xcon_output = ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction')
+    streams = xcon_output.get('return_value')
+    print(streams)
+
+    tasks = []
+    for i, stream_name in enumerate(streams):
+        task = create_task_for_stream(kwargs['dag'], stream_name, i + 1)
+        tasks.append(task)
+
+    return tasks
 
 # DAG
 default_args = {
@@ -86,17 +100,15 @@ get_logs = PythonOperator(
     dag=dag,
 )
 
-# Retrieve the list from XCom
-xcon = "{{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction') }}"
-
-stream_no = 0
-for stream in xcon:
-    stream_no +=1
-    task = create_task_for_stream(dag, stream, stream_no)
-    get_logs >> task
+create_tasks = PythonOperator(
+    task_id='create_tasks',
+    python_callable=task_builder,
+    provide_context=True,
+    dag=dag,
+)
 
 
-start >> get_stream_list >> get_logs
+start >> get_stream_list >> get_logs >> create_tasks
 
 
 
