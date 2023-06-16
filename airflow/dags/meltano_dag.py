@@ -57,7 +57,7 @@ with DAG(
         dag=dag,
         cmds=['/bin/bash', '-c'],
         # arguments=['meltano select tap-github_issues meltano_contributors "*" && meltano run tap-github_issues target-jsonl'],
-        arguments=['python stream_list_task.py tap-github_issues']
+        arguments=['python stream_list_task.py tap-github_issues'],
         env_vars={
             "AWS_ID": Variable.get("AWS_ID"),
             "AWS_PSW": Variable.get("AWS_PSW"),
