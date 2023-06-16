@@ -25,6 +25,9 @@ from airflow.operators.dummy_operator import DummyOperator
 #         },
 #     )
 
+def print_list_function(stream_list):
+    print(stream_list)
+
 # DAG
 default_args = {
     'name': 'meltano_github_dag',
@@ -37,7 +40,7 @@ default_args = {
     }
 
 
-with DAG(
+dag =  DAG(
     'Meltano_Tap-S3_github',
     default_args=default_args,
     description='Dag to run meltano using docker',
@@ -45,27 +48,41 @@ with DAG(
     start_date=datetime(2023, 6, 16),
     tags=["from: API", "to: S3", "tool: Meltano"],
     catchup=False
-) as dag:
-    
-    start = DummyOperator(task_id='run_this_first', dag=dag)
+)
 
-    get_stream_list = KubernetesPodOperator(
-        task_id='run_meltano_extraction',
-        name='run-container-extraction',
-        namespace='prod-airflow',
-        image='196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
-        image_pull_policy='Always',
-        is_delete_operator_pod=True,
-        dag=dag,
-        cmds=['/bin/bash', '-c'],
-        # arguments=['meltano select tap-github_issues meltano_contributors "*" && meltano run tap-github_issues target-jsonl'],
-        arguments=['python get_streams.py tap-github_issues'],
-        env_vars={
-            "AWS_ID": Variable.get("AWS_ID"),
-            "AWS_PSW": Variable.get("AWS_PSW"),
-            "GITHUB_TOKEN" : Variable.get("GITHUB_TOKEN"),
-            "STREAMNAME": "meltano_contributors"
-        },
-    )
+start = DummyOperator(task_id='run_this_first', dag=dag)
+
+get_stream_list = KubernetesPodOperator(
+    task_id='run_meltano_extraction',
+    name='run-container-extraction',
+    namespace='prod-airflow',
+    image='196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
+    image_pull_policy='Always',
+    is_delete_operator_pod=True,
+    dag=dag,
+    cmds=['/bin/bash', '-c'],
+    # arguments=['meltano select tap-github_issues meltano_contributors "*" && meltano run tap-github_issues target-jsonl'],
+    arguments=['python get_streams.py tap-github_issues'],
+    env_vars={
+        "AWS_ID": Variable.get("AWS_ID"),
+        "AWS_PSW": Variable.get("AWS_PSW"),
+        "GITHUB_TOKEN" : Variable.get("GITHUB_TOKEN"),
+        "STREAMNAME": "meltano_contributors"
+    },
+)
+
+# Retrieve the list from XCom
+stream_list = "{{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction') }}"
+
+get_logs = PythonOperator(
+    task_id='get_logs_task',
+    python_callable=print_list_function,
+    op_args=[stream_list],
+    provide_context=True,
+    dag=dag,
+)
+
+
+list_stream_task = Pyth
 
 start >> get_stream_list
