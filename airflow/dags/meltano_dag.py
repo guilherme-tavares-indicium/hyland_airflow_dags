@@ -5,6 +5,8 @@ from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
+import ast
+
 
 
 def print_list_function(**kwargs):
@@ -85,7 +87,9 @@ get_logs = PythonOperator(
 )
 
 # Retrieve the list from XCom
-stream_list = "{{ ti.xcom_pull(task_ids='run_meltano_extraction') }}"
+xcon_literal = "{{ ti.xcom_pull(task_ids='run_meltano_extraction') }}"
+xcon = ast.literal_eval(xcon_literal)
+stream_list.get('return_value')
 
 stream_no = 0
 for stream in stream_list:
