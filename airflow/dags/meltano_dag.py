@@ -87,12 +87,11 @@ get_logs = PythonOperator(
 )
 
 # Retrieve the list from XCom
-xcon = {{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction') }}
-# xcon = ast.literal_eval(xcon_literal)
-stream_list.get('return_value')
+xcon = "{{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction') }}"
+stream_list = ast.literal_eval(xcon)
 
 stream_no = 0
-for stream in stream_list:
+for stream in xcon:
     stream_no +=1
     task = create_task_for_stream(dag, stream, stream_no)
     get_logs >> task
