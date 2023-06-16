@@ -7,16 +7,16 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
 from kubernetes.client import V1Volume, V1VolumeMount
 
-xcom_volume = V1Volume(
-    name="xcom-custom",
-    empty_dir={}
-)
+# xcom_volume = V1Volume(
+#     name="xcom-custom",
+#     empty_dir={}
+# )
 
 
-xcom_volume_mount = V1VolumeMount(
-    name="xcom-custom",
-    mount_path="/airflow/xcom"
-)
+# xcom_volume_mount = V1VolumeMount(
+#     name="xcom-custom",
+#     mount_path="/airflow/xcom"
+# )
 
 
 
@@ -72,8 +72,8 @@ get_stream_list = KubernetesPodOperator(
         "STREAMNAME": "meltano_contributors"
     },
     do_xcom_push=True,
-    volumes=[xcom_volume],
-    volume_mounts=[xcom_volume_mount],
+    # volumes=[xcom_volume],
+    # volume_mounts=[xcom_volume_mount],
 )
 
 # Retrieve the list from XCom
