@@ -85,6 +85,4 @@ get_logs = PythonOperator(
 )
 
 
-list_stream_task = Pyth
-
-start >> get_stream_list
+start >> get_stream_list >> get_logs
