@@ -77,6 +77,8 @@ get_stream_list = KubernetesPodOperator(
         "GITHUB_TOKEN" : Variable.get("GITHUB_TOKEN"),
         "STREAMNAME": "meltano_contributors"
     },
+    do_xcom_push=True,
+    xcom_push=lambda output: output.strip().split('\n'),
 )
 
 # Retrieve the list from XCom
