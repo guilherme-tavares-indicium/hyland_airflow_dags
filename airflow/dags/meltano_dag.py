@@ -5,6 +5,8 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.python_operator import PythonOperator
+
 
 # def create_new_kubernetes_operator_task(task_id, output, dag, task_no):
 #     return KubernetesPodOperator(
