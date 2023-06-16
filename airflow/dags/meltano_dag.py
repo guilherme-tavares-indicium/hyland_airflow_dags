@@ -27,7 +27,8 @@ from airflow.operators.python_operator import PythonOperator
 #         },
 #     )
 
-def print_list_function(stream_list):
+def print_list_function(**kwargs):
+    stream_list = kwargs['ti'].xcom_pull(key='return_value', task_ids='run_meltano_extraction')
     print(stream_list)
 
 # DAG
@@ -81,8 +82,6 @@ get_logs = PythonOperator(
     python_callable=print_list_function,
     provide_context=True,
     dag=dag,
-    templates_dict={'stream_list': "{{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction') }}"},
-    template_fields=['stream_list'],
 )
 
 start >> get_stream_list >> get_logs
