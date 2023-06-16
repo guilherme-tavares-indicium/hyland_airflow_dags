@@ -1,38 +1,28 @@
 from datetime import datetime
-import yaml
 from airflow import DAG
 # from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
-import logging
+from kubernetes.client import V1Volume, V1VolumeMount
 
+xcom_volume = V1Volume(
+    name="xcom",
+    empty_dir={}
+)
 
+xcom_volume_mount = V1VolumeMount(
+    name="xcom",
+    mount_path="/airflow/xcom"
+)
 
-# def create_new_kubernetes_operator_task(task_id, output, dag, task_no):
-#     return KubernetesPodOperator(
-#         task_id=task_id,
-#         name=f'run-stream-{task_no}',
-#         namespace='prod-airflow',
-#         image='046390580407.dkr.ecr.us-east-1.amazonaws.com/hyland_aws_meltano_ecr',
-#         image_pull_policy='Always',
-#         is_delete_operator_pod=True,
-#         dag=dag,
-#         cmds=['/bin/bash', '-c'],
-#         arguments=[f'meltano select tap-github_issues $STREAMNAME "*" && meltano run tap-github_issues target-s3'],
-#         env_vars={
-#             "AWS_ID": Variable.get("AWS_ID"),
-#             "AWS_PSW": Variable.get("AWS_PSW"),
-#             "GITHUB_TOKEN" : Variable.get("GITHUB_TOKEN"),
-#             "STREAMNAME": output
-#         },
-#     )
 
 def print_list_function(**kwargs):
     ti = kwargs['ti']
-    ti.xcom_push(key='return_value', value=stream_names)
+    stream_names = ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction')
     print(stream_names)
+
 
 
     # return stream_list
@@ -80,7 +70,8 @@ get_stream_list = KubernetesPodOperator(
         "STREAMNAME": "meltano_contributors"
     },
     do_xcom_push=True,
-    get_logs=True,
+    volumes=[xcom_volume],
+    volume_mounts=[xcom_volume_mount],
 )
 
 # Retrieve the list from XCom
@@ -94,3 +85,22 @@ get_logs = PythonOperator(
 )
 
 start >> get_stream_list >> get_logs
+
+# def create_new_kubernetes_operator_task(task_id, output, dag, task_no):
+#     return KubernetesPodOperator(
+#         task_id=task_id,
+#         name=f'run-stream-{task_no}',
+#         namespace='prod-airflow',
+#         image='046390580407.dkr.ecr.us-east-1.amazonaws.com/hyland_aws_meltano_ecr',
+#         image_pull_policy='Always',
+#         is_delete_operator_pod=True,
+#         dag=dag,
+#         cmds=['/bin/bash', '-c'],
+#         arguments=[f'meltano select tap-github_issues $STREAMNAME "*" && meltano run tap-github_issues target-s3'],
+#         env_vars={
+#             "AWS_ID": Variable.get("AWS_ID"),
+#             "AWS_PSW": Variable.get("AWS_PSW"),
+#             "GITHUB_TOKEN" : Variable.get("GITHUB_TOKEN"),
+#             "STREAMNAME": output
+#         },
+#     )
