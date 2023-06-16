@@ -31,7 +31,7 @@ import logging
 
 def print_list_function(**kwargs):
     ti = kwargs['ti']
-    stream_list = ti.xcom_pull(task_ids='run_meltano_extraction')
+    stream_list = ti.xcom_push(key='return_value', value=stream_list)
     print(stream_list)
 
 
