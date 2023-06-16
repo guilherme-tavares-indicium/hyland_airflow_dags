@@ -49,7 +49,7 @@ with DAG(
     
     start = DummyOperator(task_id='run_this_first', dag=dag)
 
-    run_meltano_extract = KubernetesPodOperator(
+    get_stream_list = KubernetesPodOperator(
         task_id='run_meltano_extraction',
         name='run-container-extraction',
         namespace='prod-airflow',
@@ -59,7 +59,7 @@ with DAG(
         dag=dag,
         cmds=['/bin/bash', '-c'],
         # arguments=['meltano select tap-github_issues meltano_contributors "*" && meltano run tap-github_issues target-jsonl'],
-        arguments=['echo "hello world"'],
+        arguments=['python stream_list_task.py tap-github_issues'],
         env_vars={
             "AWS_ID": Variable.get("AWS_ID"),
             "AWS_PSW": Variable.get("AWS_PSW"),
@@ -68,4 +68,4 @@ with DAG(
         },
     )
 
-start >> run_meltano_extract
+start >> get_stream_list
