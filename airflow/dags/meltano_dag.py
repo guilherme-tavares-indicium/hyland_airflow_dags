@@ -13,8 +13,9 @@ def print_list_function(**kwargs):
     print(stream_names)
 
 def create_task_for_stream(dag, stream_name):
+    task_id = f"run_meltano_extraction_{stream_name.replace('-', '_')}"
     task = KubernetesPodOperator(
-        task_id=f'run_meltano_extraction_{stream_name}',
+        task_id=task_id,
         name=f'run-container-extraction-{stream_name}',
         namespace='prod-airflow',
         image='196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
