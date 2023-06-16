@@ -31,8 +31,8 @@ import logging
 
 def print_list_function(**kwargs):
     ti = kwargs['ti']
-    ti.xcom_push(key='return_value', value=stream_list)
-    print(stream_list)
+    ti.xcom_push(key='return_value', value=stream_names)
+    print(stream_names)
 
 
     # return stream_list
