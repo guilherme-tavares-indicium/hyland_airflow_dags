@@ -16,7 +16,7 @@ def create_task_for_stream(dag, stream_name, stream_no):
     # task_id = f"run_meltano_extraction_{stream_name.replace('-', '_')}"
     task = KubernetesPodOperator(
         task_id=f'run_meltano_extraction_{stream_no}',
-        name=f'run-container-extraction-{stream_name}',
+        name=f'run-container-extraction-{stream_no}',
         namespace='prod-airflow',
         image='196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
         image_pull_policy='Always',
