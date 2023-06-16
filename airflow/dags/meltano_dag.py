@@ -79,10 +79,10 @@ stream_list = "{{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extract
 get_logs = PythonOperator(
     task_id='get_logs_task',
     python_callable=print_list_function,
-    op_args=[stream_list],
     provide_context=True,
     dag=dag,
+    templates_dict={'stream_list': "{{ ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction') }}"},
+    template_fields=['stream_list'],
 )
-
 
 start >> get_stream_list >> get_logs
