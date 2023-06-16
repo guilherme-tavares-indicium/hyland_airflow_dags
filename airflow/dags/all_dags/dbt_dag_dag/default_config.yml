@@ -1,9 +1,0 @@
-dbt:
-  default_args:
-    start_date: "2022-02-01"  # or '2 days'
-    retries: 0
-    retry_delay_sec: 300
-  schedule_interval: '7/15 9-23 * * *'
-  concurrency: 16
-  max_active_runs: 1
-  dagrun_timeout_sec: 1200

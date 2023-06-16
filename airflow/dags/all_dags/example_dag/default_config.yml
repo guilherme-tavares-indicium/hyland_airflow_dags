@@ -1,7 +1,0 @@
-example_first:
-  default_args:
-    start_date: "2022-02-02"
-    retries: 1
-  schedule_interval: '@daily'
-  concurrency: 1
-  max_active_runs: 1
