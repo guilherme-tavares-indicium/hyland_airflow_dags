@@ -30,11 +30,9 @@ import logging
 #     )
 
 def print_list_function(**kwargs):
-    raw_logs = kwargs['ti'].xcom_pull(task_ids='run_meltano_extraction')
-    stream_list = raw_logs.strip().split('\n')
-    logging.info(stream_list)
+    print('{{{{ task_instance.xcom_pull(task_ids="get_logs_task", key="return_value") }}}}')
 
-    return stream_list
+    # return stream_list
 
 
 # DAG
