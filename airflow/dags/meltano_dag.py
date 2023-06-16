@@ -22,8 +22,7 @@ def create_new_kubernetes_operator_task(task_id, output, dag, task_no):
             "AWS_PSW": Variable.get("AWS_PSW"),
             "GITHUB_TOKEN" : Variable.get("TARGET_SNOWFLAKE_PASSWORD"),
             "STREAMNAME": output
-        },
-        dag=dag,
+        }
     )
 
 # DAG
