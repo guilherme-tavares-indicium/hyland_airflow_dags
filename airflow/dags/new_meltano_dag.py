@@ -14,7 +14,6 @@ def create_task_for_stream(stream_name, stream_no):
 
     task_args = {
         "task_id": task_id,
-        "name": task_name,
         "namespace": 'prod-airflow',
         "image": '196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
         "image_pull_policy": 'Always',
@@ -30,19 +29,7 @@ def create_task_for_stream(stream_name, stream_no):
         "do_xcom_push": False,
     }
 
-    return task_id, task_args
-
-
-
-def create_downstream_tasks(ti):
-    xcom_output = ti.xcom_pull(task_ids='run_meltano_extraction')
-    streams = xcom_output.get('return_value')
-
-    with TaskGroup("downstream_tasks") as downstream_group:
-        for i, stream_name in enumerate(streams):
-            task_id, task_args = create_task_for_stream(stream_name, i + 1)
-            task = KubernetesPodOperator(dag=dag, **task_args)
-            downstream_group.add(task)
+    return KubernetesPodOperator(dag=dag, **task_args)
 
 
 default_args = {
@@ -85,15 +72,20 @@ with DAG(
         do_xcom_push=True
     )
 
-    create_tasks = PythonOperator(
-        task_id='create_tasks',
-        python_callable=create_downstream_tasks,
-        provide_context=True,
-        dag=dag,
-    )
 
-    start >> get_stream_list >> create_tasks
+    downstream_tasks = []
+    xcom_push_task = None
 
-    # Set dependencies within the TaskGroup
-    create_tasks >> create_tasks.downstream_group
+    # Create downstream tasks based on the xcom output of get_stream_list task
+    for i, stream_name in enumerate(get_stream_list.output['return_value']['return_value']):
+        print(f'name is {stream_name}')
+        task = create_task_for_stream(stream_name, i + 1)
+        downstream_tasks.append(task)
 
+        if xcom_push_task is None:
+            # Create a task to push the downstream tasks to XCom
+            xcom_push_task = DummyOperator(task_id='xcom_push_task', dag=dag)
+            get_stream_list >> xcom_push_task
+
+    # Set the downstream relationship between tasks
+    start >> get_stream_list >> xcom_push_task >> downstream_tasks
