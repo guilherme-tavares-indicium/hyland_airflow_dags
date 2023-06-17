@@ -3,8 +3,9 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
+# from airflow.operators.python_operator import PythonOperator
 from airflow.operators.python import BranchPythonOperator
+from airflow.operators.python import PythonOperator
 import json
 
 def create_task_for_stream(dag, stream_name, stream_no):
@@ -38,7 +39,16 @@ def create_downstream_tasks(ti):
         subtask = create_task_for_stream(dag, stream_name, i + 1)
         ti.task.set_downstream(subtask)
 
+def branch_callable(ti):
+    xcom_output = ti.xcom_pull(task_ids='run_meltano_extraction')
+    streams = xcom_output.get('return_value')
+    task_ids = []
 
+    for i, stream_name in enumerate(streams):
+        task_id = f'run_meltano_extraction_{i + 1}'
+        task_ids.append(task_id)
+
+    return task_ids
 
 default_args = {
     "owner": "airflow",
@@ -81,11 +91,17 @@ with DAG(
         do_xcom_push=True
     )
 
-    create_tasks = PythonOperator(
-        task_id='create_tasks',
-        python_callable=create_downstream_tasks,
+    # create_tasks = PythonOperator(
+    #     task_id='create_tasks',
+    #     python_callable=create_downstream_tasks,
+    #     provide_context=True,
+    #     dag=dag,
+    # )
+    branch_task = BranchPythonOperator(
+        task_id='branch_task',
+        python_callable=branch_callable,
         provide_context=True,
         dag=dag,
     )
 
-    start >> get_stream_list >> create_tasks
+    start >> get_stream_list >> branch_task
