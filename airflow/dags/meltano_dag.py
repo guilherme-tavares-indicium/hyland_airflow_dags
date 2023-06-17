@@ -48,7 +48,10 @@ def task_builder(**kwargs):
         task = create_task_for_stream(kwargs['dag'], stream_name, i + 1)
         tasks.append(task)
 
-    return tasks
+    # Set downstream dependencies
+    if tasks:
+        kwargs['task_instance'].downstream_task_ids.update(task.task_id for task in tasks)
+
 
 
 # DAG
