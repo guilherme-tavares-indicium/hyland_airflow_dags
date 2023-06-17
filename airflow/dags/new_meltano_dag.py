@@ -85,7 +85,7 @@ def set_downstream_tasks(ti):
     
     for task_id, task_args in downstream_tasks:
         subtask = KubernetesPodOperator(dag=dag, **task_args)
-        subtask.set_upstream(ti.task)
+        ti.task >> subtask
 
 
 default_args = {
