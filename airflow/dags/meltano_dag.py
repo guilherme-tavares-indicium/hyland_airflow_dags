@@ -34,6 +34,7 @@ def task_builder(ti):
     last_task = start
 
     for i, stream_name in enumerate(streams):
+        print(f'the stream is named {stream_name}')
         subtask = create_task_for_stream(dag, stream_name, i + 1)
         last_task >> subtask
         last_task = subtask
