@@ -41,9 +41,10 @@ def task_builder(**kwargs):
     ti = kwargs['ti']
     xcon_output = ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction')
     streams = xcon_output['return_value']
-    print(streams)
+    # print(streams)
 
     for i, stream_name in enumerate(streams):
+        print(f'this stream name is {stream_name}')
         subtask = create_task_for_stream(kwargs['dag'], stream_name, i + 1)
         kwargs['task_instance'].task.set_downstream(subtask)
 
