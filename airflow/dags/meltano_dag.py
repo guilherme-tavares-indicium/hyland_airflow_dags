@@ -3,8 +3,6 @@ from airflow import DAG
 from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
-# from airflow.operators.python_operator import PythonOperator
-from airflow.operators.python import BranchPythonOperator
 from airflow.operators.python import PythonOperator
 import json
 
@@ -97,11 +95,5 @@ with DAG(
         provide_context=True,
         dag=dag,
     )
-    # branch_task = BranchPythonOperator(
-    #     task_id='branch_task',
-    #     python_callable=branch_callable,
-    #     provide_context=True,
-    #     dag=dag,
-    # )
 
     start >> get_stream_list >> create_tasks
