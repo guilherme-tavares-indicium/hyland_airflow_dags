@@ -29,7 +29,7 @@ def create_task_for_stream(dag, stream_name, stream_no):
 
 
 def create_downstream_tasks(ti):
-    xcom_output = ti.xcom_pull(task_ids='run_meltano_extraction')
+    xcom_output = ti.xcom_pull(task_ids='get_stream_list')
     streams = xcom_output.get('return_value')
     
     downstream_tasks = []
@@ -68,8 +68,8 @@ with DAG(
     start = DummyOperator(task_id='run_this_first')
 
     get_stream_list = KubernetesPodOperator(
-        task_id='run_meltano_extraction2',
-        name='run-container-extraction2',
+        task_id='get_stream_list',
+        name='get-stream-list',
         namespace='prod-airflow',
         image='196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
         image_pull_policy='Always',
