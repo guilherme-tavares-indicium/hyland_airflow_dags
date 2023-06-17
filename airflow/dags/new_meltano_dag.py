@@ -30,7 +30,7 @@ def create_task_for_stream(dag, stream_name, stream_no):
 
 def create_downstream_tasks(ti):
     xcom_output = ti.xcom_pull(task_ids='run_meltano_extraction')
-    streams = json.loads(xcom_output)
+    streams = xcom_output.get('return_value')
     
     downstream_tasks = []
     for i, stream_name in enumerate(streams):
