@@ -44,8 +44,8 @@ def task_builder(**kwargs):
     print(streams)
 
     for i, stream_name in enumerate(streams):
-        task = create_task_for_stream(kwargs['dag'], stream_name, i + 1)
-        kwargs['task_instance'].task.set_downstream(task)
+        subtask = create_task_for_stream(kwargs['dag'], stream_name, i + 1)
+        kwargs['task_instance'].task.set_downstream(subtask)
 
 
 
