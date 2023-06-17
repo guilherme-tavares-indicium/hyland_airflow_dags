@@ -40,7 +40,7 @@ def task_builder(ti):
 
 # DAG definition and tasks remain the same
 
-with dag as DAG(
+with DAG(
     'Meltano_Tap-S3_github',
     default_args=default_args,
     description='Dag to run meltano using docker',
@@ -48,7 +48,8 @@ with dag as DAG(
     start_date=datetime(year=2023, month=6, day=16),
     tags=["from: API", "to: S3", "tool: Meltano"],
     catchup=False
-):
+    ) as dag:
+
     start = DummyOperator(task_id='run_this_first')
     
     get_stream_list = KubernetesPodOperator(
