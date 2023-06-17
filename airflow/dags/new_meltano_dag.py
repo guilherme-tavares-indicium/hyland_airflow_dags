@@ -48,9 +48,10 @@ def create_downstream_tasks(ti):
 def set_downstream_tasks(ti):
     downstream_tasks = ti.xcom_pull(key='downstream_tasks', task_ids='create_tasks')
 
-    for task_id, task_args in downstream_tasks:
-        subtask = KubernetesPodOperator(dag=dag, **task_args)
+    for task_args in downstream_tasks:
+        subtask = KubernetesPodOperator(dag=dag, **task_args[0])
         ti.task >> subtask
+
 
 
 default_args = {
