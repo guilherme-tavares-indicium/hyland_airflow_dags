@@ -43,14 +43,9 @@ def task_builder(**kwargs):
     streams = xcon_output['return_value']
     print(streams)
 
-    tasks = []
     for i, stream_name in enumerate(streams):
         task = create_task_for_stream(kwargs['dag'], stream_name, i + 1)
-        tasks.append(task)
-
-    # Set downstream dependencies
-    if tasks:
-        kwargs['task_instance'].downstream_task_ids.update(task.task_id for task in tasks)
+        kwargs['task_instance'].task.set_downstream(task)
 
 
 
