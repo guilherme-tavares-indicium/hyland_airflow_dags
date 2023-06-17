@@ -4,6 +4,7 @@ from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python_operator import PythonOperator
+from airflow.operators.branch_operator import BranchPythonOperator
 import json
 
 def create_task_for_stream(dag, stream_name, stream_no):
