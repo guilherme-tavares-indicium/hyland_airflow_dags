@@ -29,7 +29,7 @@ def create_task_for_stream(dag, stream_name, stream_no):
 
 def task_builder(ti):
     xcon_output = ti.xcom_pull(key='return_value', task_ids='run_meltano_extraction')
-    streams = json.loads(xcon_output)
+    streams = xcon_output.get('return_value')
 
     last_task = start
 
