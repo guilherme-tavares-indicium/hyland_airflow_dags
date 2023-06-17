@@ -91,17 +91,17 @@ with DAG(
         do_xcom_push=True
     )
 
-    # create_tasks = PythonOperator(
-    #     task_id='create_tasks',
-    #     python_callable=create_downstream_tasks,
-    #     provide_context=True,
-    #     dag=dag,
-    # )
-    branch_task = BranchPythonOperator(
-        task_id='branch_task',
-        python_callable=branch_callable,
+    create_tasks = PythonOperator(
+        task_id='create_tasks',
+        python_callable=create_downstream_tasks,
         provide_context=True,
         dag=dag,
     )
+    # branch_task = BranchPythonOperator(
+    #     task_id='branch_task',
+    #     python_callable=branch_callable,
+    #     provide_context=True,
+    #     dag=dag,
+    # )
 
-    start >> get_stream_list >> branch_task
+    start >> get_stream_list >> create_tasks
