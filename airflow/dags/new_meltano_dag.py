@@ -56,7 +56,7 @@ default_args = {
 }
 
 with DAG(
-    'Meltano_Tap-S3_github',
+    'Meltano_Tap-S3_github_new',
     default_args=default_args,
     description='Dag to run meltano using docker',
     schedule_interval='@once',
