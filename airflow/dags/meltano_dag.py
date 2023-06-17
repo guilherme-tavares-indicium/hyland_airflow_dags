@@ -32,14 +32,10 @@ def create_downstream_tasks(ti):
     xcom_output = ti.xcom_pull(task_ids='run_meltano_extraction')
     streams = xcom_output.get('return_value')
 
-    downstream_tasks = []
     for i, stream_name in enumerate(streams):
         task_id = f'run_meltano_extraction_{i + 1}'
         subtask = create_task_for_stream(dag, stream_name, i + 1)
-        # ti.task.set_downstream(subtask)
-        downstream_tasks.append(subtask)
-        
-    return downstream_tasks
+        ti.task.set_downstream(subtask)
 
 default_args = {
     "owner": "airflow",
@@ -89,7 +85,4 @@ with DAG(
         dag=dag,
     )
 
-    # start >> get_stream_list >> create_tasks
-
-    downstream_tasks = create_tasks >> DummyOperator(task_id='downstream_dummy', dag=dag)
-    start >> get_stream_list >> create_tasks >> downstream_tasks
+    start >> get_stream_list >> create_tasks
