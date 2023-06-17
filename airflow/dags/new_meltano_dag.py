@@ -77,7 +77,6 @@ with DAG(
     xcom_push_task = None
 
     # Create downstream tasks based on the xcom output of get_stream_list task
-    print(f'arg is {get_stream_list.output['return_value']}')
     for i, stream_name in enumerate(get_stream_list.output['return_value']):
         print(f'name is {stream_name}')
         task = create_task_for_stream(stream_name, i + 1)
