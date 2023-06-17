@@ -4,7 +4,8 @@ from airflow.models import Variable
 from airflow.contrib.operators.kubernetes_pod_operator import KubernetesPodOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
-import json
+from airflow.utils.task_group import TaskGroup
+
 
 
 def create_task_for_stream(stream_name, stream_no):
@@ -37,21 +38,11 @@ def create_downstream_tasks(ti):
     xcom_output = ti.xcom_pull(task_ids='run_meltano_extraction')
     streams = xcom_output.get('return_value')
 
-    downstream_tasks = []
-    for i, stream_name in enumerate(streams):
-        task_id, task_args = create_task_for_stream(stream_name, i + 1)
-        downstream_tasks.append((task_id, task_args))
-
-    ti.xcom_push(key='downstream_tasks', value=downstream_tasks)
-
-
-def set_downstream_tasks(ti):
-    downstream_tasks = ti.xcom_pull(key='downstream_tasks', task_ids='create_tasks')
-
-    for task_args in downstream_tasks:
-        subtask = KubernetesPodOperator(dag=dag, **task_args[0])
-        ti.task >> subtask
-
+    with TaskGroup("downstream_tasks") as downstream_group:
+        for i, stream_name in enumerate(streams):
+            task_id, task_args = create_task_for_stream(stream_name, i + 1)
+            task = KubernetesPodOperator(dag=dag, **task_args)
+            downstream_group.add(task)
 
 
 default_args = {
@@ -101,12 +92,8 @@ with DAG(
         dag=dag,
     )
 
-    set_downstream = PythonOperator(
-        task_id='set_downstream_tasks',
-        python_callable=set_downstream_tasks,
-        provide_context=True,
-        dag=dag,
-    )
+    start >> get_stream_list >> create_tasks
 
-    start >> get_stream_list >> create_tasks >> set_downstream
+    # Set dependencies within the TaskGroup
+    create_tasks >> create_tasks.downstream_group
 
