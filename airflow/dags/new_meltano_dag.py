@@ -84,7 +84,7 @@ def set_downstream_tasks(ti):
     downstream_tasks = ti.xcom_pull(key='downstream_tasks', task_ids='create_tasks')
     
     for task_id, task_args in downstream_tasks:
-        subtask = KubernetesPodOperator(task_id=task_id, dag=dag, **task_args)
+        subtask = KubernetesPodOperator(dag=dag, **task_args)
         subtask.set_upstream(ti.task)
 
 
