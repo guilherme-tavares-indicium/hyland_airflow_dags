@@ -6,6 +6,8 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
+with open("/airflow/dags/utils/get_streams.sh", 'r') as file:
+    script_content = file.read()
 
 def _process_obtained_data(ti):
     xcom_output = ti.xcom_pull(task_ids='get_stream_list')
@@ -15,30 +17,6 @@ def _process_obtained_data(ti):
 
 def _print_greeting(stream_name, greeting):
     print(f'{greeting} from {stream_name}')
-
-# def create_task_for_stream(stream_name, stream_no):
-#     task_id = f'run_meltano_extraction_{stream_no}'
-#     task_name = f'run-container-extraction-{stream_no}'
-
-#     task_args = {
-#         "task_id": task_id,
-#         "namespace": 'prod-airflow',
-#         "image": '196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
-#         "image_pull_policy": 'Always',
-#         "is_delete_operator_pod": True,
-#         "cmds": ['/bin/bash', '-c'],
-#         "arguments": ['echo ${STREAMNAME}'],
-#         "env_vars": {
-#             "AWS_ID": Variable.get("AWS_ID"),
-#             "AWS_PSW": Variable.get("AWS_PSW"),
-#             "GITHUB_TOKEN": Variable.get("GITHUB_TOKEN"),
-#             "STREAMNAME": stream_name
-#         },
-#         "do_xcom_push": False,
-#     }
-
-#     return KubernetesPodOperator(dag=dag, **task_args)
-
 
 default_args = {
     "owner": "airflow",
@@ -69,7 +47,7 @@ with DAG(
         is_delete_operator_pod=True,
         dag=dag,
         cmds=['/bin/bash', '-c'],
-        arguments=['python get_streams.py tap-github_issues'],
+        arguments=[script_content],
         env_vars={
             "AWS_ID": Variable.get("AWS_ID"),
             "AWS_PSW": Variable.get("AWS_PSW"),
@@ -113,17 +91,6 @@ with DAG(
                 }
 
                 stream_task =  KubernetesPodOperator(dag=dag, **task_args)
-                # TaskGroup level dependencies
                 stream_task
-        # if iterable_list:
-        #     for index, stream in enumerate(iterable_list):
-        #         say_hello = PythonOperator(
-        #             task_id=f'say_hello_from_{stream}',
-        #             python_callable=_print_greeting,
-        #             op_kwargs={'stream_name': stream, 'greeting': 'Hello'}
-        #         )
-        #         # TaskGroup level dependencies
-        #         say_hello
 
-    # Set the downstream relationship between tasks
     start >> get_stream_list >> preparation_task >> dynamic_tasks_group >> end
