@@ -6,7 +6,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
-with open("/opt/airflow/dags/repo/airflow/dags/utils/get_streams.sh", 'r') as file:
+with open("/opt/airflow/dags/repo/airflow/dags/utils/get_streams", 'r') as file:
     script_content = file.read()
 
 def _process_obtained_data(ti):
@@ -49,10 +49,7 @@ with DAG(
         cmds=['/bin/bash', '-c'],
         arguments=[script_content],
         env_vars={
-            "AWS_ID": Variable.get("AWS_ID"),
-            "AWS_PSW": Variable.get("AWS_PSW"),
-            "GITHUB_TOKEN": Variable.get("GITHUB_TOKEN"),
-            "STREAMNAME": "meltano_contributors"
+            "tap_name": "tap-github_issues",
         },
         do_xcom_push=True
     )
