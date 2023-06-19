@@ -105,4 +105,4 @@ with DAG(
                 say_hello
 
     # Set the downstream relationship between tasks
-    start >> get_stream_list >> dynamic_tasks_group >> end
+    start >> get_stream_list >> preparation_task >> dynamic_tasks_group >> end
