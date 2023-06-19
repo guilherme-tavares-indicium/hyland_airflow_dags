@@ -6,7 +6,7 @@ from airflow.operators.dummy_operator import DummyOperator
 from airflow.operators.python import PythonOperator
 from airflow.utils.task_group import TaskGroup
 
-with open("/opt/airflow/dags/utils/get_streams.sh", 'r') as file:
+with open("/opt/airflow/dags/repo/airflow/dags/utils/get_streams.sh", 'r') as file:
     script_content = file.read()
 
 def _process_obtained_data(ti):
