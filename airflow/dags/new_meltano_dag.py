@@ -58,7 +58,7 @@ with DAG(
     catchup=False
 ) as dag:
 
-    start = DummyOperator(task_id='run_this_first')
+    start = DummyOperator(task_id='start')
 
     get_stream_list = KubernetesPodOperator(
         task_id='get_stream_list',
@@ -96,13 +96,34 @@ with DAG(
                    ) as dynamic_tasks_group:
         if iterable_list:
             for index, stream in enumerate(iterable_list):
-                say_hello = PythonOperator(
-                    task_id=f'say_hello_from_{stream}',
-                    python_callable=_print_greeting,
-                    op_kwargs={'stream_name': stream, 'greeting': 'Hello'}
-                )
+                task_args = {
+                    "task_id": f'run_stream_{stream}',
+                    "namespace": 'prod-airflow',
+                    "image": '196029031078.dkr.ecr.us-east-1.amazonaws.com/prod-meltano-hylandtraining:5ba8dc20a968fe5fd0512d43d41866f83779d917',
+                    "image_pull_policy": 'Always',
+                    "is_delete_operator_pod": True,
+                    "cmds": ['/bin/bash', '-c'],
+                    "arguments": [f'meltano select tap-github_issues {stream} && meltano run tap-github_issues target-s3'],
+                    "env_vars": {
+                        "AWS_ID": Variable.get("AWS_ID"),
+                        "AWS_PSW": Variable.get("AWS_PSW"),
+                        "GITHUB_TOKEN": Variable.get("GITHUB_TOKEN")
+                    },
+                    "do_xcom_push": False,
+                }
+
+                stream_task =  KubernetesPodOperator(dag=dag, **task_args)
                 # TaskGroup level dependencies
-                say_hello
+                stream_task
+        # if iterable_list:
+        #     for index, stream in enumerate(iterable_list):
+        #         say_hello = PythonOperator(
+        #             task_id=f'say_hello_from_{stream}',
+        #             python_callable=_print_greeting,
+        #             op_kwargs={'stream_name': stream, 'greeting': 'Hello'}
+        #         )
+        #         # TaskGroup level dependencies
+        #         say_hello
 
     # Set the downstream relationship between tasks
     start >> get_stream_list >> preparation_task >> dynamic_tasks_group >> end
